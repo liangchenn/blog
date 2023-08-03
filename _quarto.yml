@@ -1,0 +1,19 @@
+project:
+  type: website
+
+website:
+  title: "Liangchenn's Blog"
+  navbar:
+    right:
+      - about.qmd
+      - icon: github
+        href: https://github.com/liangchenn/
+      - icon: twitter
+        href: https://twitter.com/@liangchennchen/
+format:
+  html:
+    theme: cosmo
+    css: styles.css
+
+
+
