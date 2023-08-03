@@ -1,0 +1,13 @@
+---
+title: "Jupyter + Quarto for notebooks"
+author: "Liang-Cheng Chen"
+date: "2023-08-01"
+categories: [note]
+draft: false
+---
+
+基本上把過去的一些 jupyter notebooks 利用 quarto 以及 github page 製作成個人的網頁
+
+:::{.callout-note}
+TODO: document steps for blog
+:::

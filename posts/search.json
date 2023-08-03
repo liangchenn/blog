@@ -1,0 +1,37 @@
+[
+  {
+    "objectID": "labs/hypothesis-testing.html",
+    "href": "labs/hypothesis-testing.html",
+    "title": "Hypothesis Testing",
+    "section": "",
+    "text": "A frequentist method to make statistical inference\nConcepts:\n\nwant to know how extreme our observed data is based on the belief\nif the probability of having data more extreme than current data is very small, then we could say the belief may not be correct\n\nBuilding blocks\n\nbelief: null hypothesis\nlevel of extreme: limiting distribution\nprobability of having data more extreme: p-value"
+  },
+  {
+    "objectID": "labs/hypothesis-testing.html#data",
+    "href": "labs/hypothesis-testing.html#data",
+    "title": "Hypothesis Testing",
+    "section": "Data",
+    "text": "Data\nNow we could generate random samples to illustrate above concepts.\nFirst use the i.i.d random sample from binomial distribution.\n\nimport numpy as np\n\nimport matplotlib.pyplot as plt\nimport seaborn as sns\n\n\n# binomial setups\np = 0.05\nsize = 1000\n\n# random sample\nsamples = np.random.binomial(n=1, p=p, size=size)\n\nTheoratically, the variance of a binomial distribution will follow:\n\\(Var(X) = p \\cdot (1-p)\\)\n\nprint(f\"Theoratical value: {p * (1-p)}\")\nprint(f\"Empirical   value: {samples.var()}\")\n\nTheoratical value: 0.0475\nEmpirical   value: 0.045696"
+  },
+  {
+    "objectID": "labs/hypothesis-testing.html#limiting-distribution",
+    "href": "labs/hypothesis-testing.html#limiting-distribution",
+    "title": "Hypothesis Testing",
+    "section": "Limiting Distribution",
+    "text": "Limiting Distribution\nWe could obtain the limiting distribution mathematically.\nGoes from sampling distribution (the distribution of statistic);\nTo the limiting distribution (the distribution when size goes to infinitely large)\n\nSampling Distribution\nFor random sample \\(X_i \\sim (\\mu, \\sigma^2)\\)\nthe sampled mean will be \\(\\bar{X_n} = \\frac{\\sum_i X_i}{n}\\), where \\(n\\) is the size of sample\nThen we will know that:\n\n\\(E[\\bar X_n] = \\frac{1}{n} \\cdot n \\cdot E[X_i] = \\mu\\)\n\\(Var(\\bar X_n) = \\frac{1}{n^2} \\cdot n \\cdot Var(X_i) = \\frac{\\sigma^2}{n}\\)\n\nThe sampling distribution of sampled mean will be \\(\\bar X_n \\sim (\\mu, \\frac{\\sigma^2}{n})\\)\n\n\nAsymptotic Property\nBy the C.L.T, we know that:\nAs \\(n \\rightarrow \\infty\\), \\(\\bar X_n \\sim^d N(\\mu, \\frac{\\sigma^2}{n})\\)"
+  },
+  {
+    "objectID": "labs/hypothesis-testing.html#how-could-we-understand-it-empirically",
+    "href": "labs/hypothesis-testing.html#how-could-we-understand-it-empirically",
+    "title": "Hypothesis Testing",
+    "section": "How could we understand it empirically?",
+    "text": "How could we understand it empirically?\nEmpirically, it is like you repeat the random draw over and over agian, and collect the mean each time. (bootstrapping method)\nThe histogram of the means will be the sampling distribution.\n\n# simulate the random draws for 500 times\n\nn_simulation = 500\nbootstrap_sampled_mean = np.zeros(n_simulation)\n\nfor i in range(n_simulation):\n    \n    bootstrap_samples = np.random.choice(samples, size=len(samples), replace=True)\n    \n    bootstrap_sampled_mean[i] = bootstrap_samples.mean()\n\n\nsns.histplot(bootstrap_sampled_mean, stat='probability')\nplt.title(fr\"Sampling Distribution for $\\bar X_n$, N={len(samples)}\")\nplt.show()\n\n\n\n\nAdd the PDF for the empirical and theoratical distribution\n\nfrom scipy.stats import norm\n\n\nsmean = samples.mean()\nsvar = samples.var() / len(samples)\nsstd = np.sqrt(svar)\n\n\nsns.kdeplot(bootstrap_sampled_mean, label='empirical', color='salmon')\nsns.lineplot(\n    x=(x := np.linspace(min(bootstrap_sampled_mean), max(bootstrap_sampled_mean))), \n    y=norm.pdf(x, loc=smean, scale=sstd),\n    color='skyblue',\n    label='theoratical'\n)\nplt.title(fr\"PDF for $\\bar X_n$, N={len(samples)}\")\nplt.legend()\nplt.show()"
+  },
+  {
+    "objectID": "labs/hypothesis-testing.html#hypothesis-testing",
+    "href": "labs/hypothesis-testing.html#hypothesis-testing",
+    "title": "Hypothesis Testing",
+    "section": "Hypothesis Testing",
+    "text": "Hypothesis Testing\nNow suppose we want to know if the mean is \\(p = 0.075\\)\nWe construct the belief, the null hypothesis, \\(H_0: p = 0.075\\)\nGiven the null hypothesis is true we construct the theoratical distribution for sampled mean.\n\ntrue_mean = 0.065\ntrue_se = np.sqrt(true_mean * (1-true_mean) / size)\n\n\nx = np.linspace(true_mean - 4 * true_se, true_mean + 4 * true_se)\ny = norm.pdf(x, loc=true_mean, scale=true_se)\n\nx_fill = np.linspace(true_mean - 4 * true_se, samples.mean())\ny_fill = norm.pdf(x_fill, loc=true_mean, scale=true_se)\n\n\nsns.lineplot(x=x, y=y, label='theoratical')\nplt.axvline(x=samples.mean(), linestyle='-', color='salmon', label='observed mean')\nplt.axvline(x=true_mean, color='lightgray', label='H0 mean')\nplt.fill_between(x_fill, y_fill, color='skyblue', alpha=0.3, label='extreme prob.')\n\nplt.title(r\"$\\bar X_n$ Sampling Dist. | H0\")\nplt.legend()\nplt.show()\n\n\n\n\nThe shaded area is the probability of observing a realized sample mean more extreme than the current one, which is the p-value.\nThe smaller it gets, the more likely the null hypothesis to be false. Then we could set a conventional threshold (e.g. 5%), then use the threshold to reject the H0.\nWe use conventional 5% threshold. For two-sided test, it will be 2.5% for each side.\nNow we could obtain the probability \\(Pr(X &lt;= observed\\_mean | H0)\\)\n\npvalue = norm.cdf(samples.mean(), loc=true_mean, scale=true_se)\n\n\nprint(f\"The p-value is: {pvalue:.4f}\")\n\nif pvalue &lt;= 0.025:\n    print(f\"Result: Reject H0\")\nelse:\n    print(f\"Result: Could not reject H0\")\n\nThe p-value is: 0.0146\nResult: Reject H0\n\n\n\nCompare to the test functions from Python modules\n\nfrom statsmodels.stats.proportion import proportions_ztest\nfrom scipy.stats import ttest_1samp\nfrom scipy.stats.distributions import t\n\n\nttest_1samp(samples, popmean=true_mean, alternative='two-sided')\n\nTtest_1sampResult(statistic=-2.513579192534593, pvalue=0.012107660264868304)\n\n\n\nproportions_ztest(samples.sum(), len(samples), value=true_mean, alternative='two-sided')\n\n(-2.5148369255092393, 0.01190874531462058)\n\n\nOr we could implement the z-statistic on our own\n\nt_statistic = (samples.mean() - true_mean) / (samples.std() / np.sqrt(len(samples)))\n\nz_statistic = (samples.mean() - true_mean) / np.sqrt(samples.mean() * (1-samples.mean()) / len(samples)\n\n\nz_statistic, t_statistic\n\n(-2.5148369255092393, -2.5148369255092393)\n\n\n\nnorm.cdf(z_statistic, loc=0, scale=1) * 2 # for two-sided test\n\n0.01190874531462058\n\n\n\nt.cdf(t_statistic, df=len(samples), loc=0, scale=true_se) * 2 # for two-sided test\n\n0.0"
+  }
+]
