@@ -13,7 +13,8 @@ about:
 
 ---
 
-About this blog
-
 Hi, I'm Liang-Cheng.
-Here is where I keep notes for self-taught stuffs.
+
+This is where I keep notes for self-taught stuff.
+
+You could contact me through [mail](liangchenn.chen@gmail.com) if there is any problem.

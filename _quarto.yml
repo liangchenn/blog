@@ -4,7 +4,9 @@ project:
 
 website:
   title: "Liangchenn's Blog"
+  favicon: "asset/favicon.png"
   navbar:
+    logo: "asset/favicon.png"
     right:
       - about.qmd
       - icon: github
@@ -13,7 +15,9 @@ website:
         href: https://twitter.com/@liangchennchen/
 format:
   html:
-    theme: cosmo
+    theme: 
+      light: cosmo
+      dark: darkly
     css: styles.css
 
 
